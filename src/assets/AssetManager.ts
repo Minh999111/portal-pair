@@ -6,7 +6,8 @@ let deckPromise: Promise<THREE.Group> | undefined;
 
 /** Main authored environment: locally bundled, lightweight CC0 GLB. */
 export async function dressSciFiChamber(target: THREE.Group, level: number) {
-  deckPromise ??= loader.loadAsync('/assets/spaceship-deck-showroom.glb').then(({ scene }) => scene);
+  const deckUrl = new URL('assets/spaceship-deck-showroom.glb', document.baseURI).toString();
+  deckPromise ??= loader.loadAsync(deckUrl).then(({ scene }) => scene);
   try {
     const deck = (await deckPromise).clone(true);
     deck.name = `spaceship-deck-${level + 1}`;
