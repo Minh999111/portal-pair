@@ -1,0 +1,1 @@
+{"root":["./src/main.ts","./src/assets/assetmanager.ts","./src/game/types.ts","./src/network/network.ts","./src/physics/physics.ts","./src/portal/portalsystem.ts","./src/world/chambers.ts","./turn-worker/index.ts"],"version":"5.9.3"}
