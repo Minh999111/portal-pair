@@ -2,23 +2,26 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 const loader = new GLTFLoader();
-type Placement = { file: string; position: [number, number, number]; rotation?: number; scale?: number };
+let deckPromise: Promise<THREE.Group> | undefined;
 
-/** Local-only CC0 dressing; failures leave the original procedural chamber playable. */
+/** Main authored environment: locally bundled, lightweight CC0 GLB. */
 export async function dressSciFiChamber(target: THREE.Group, level: number) {
-  const placements: Placement[] = [
-    { file: 'template-floor.glb', position: [0, .03, 0], scale: 5.45 },
-    { file: 'template-wall.glb', position: [-10.73, 3.7, 0], rotation: Math.PI / 2, scale: 5.4 },
-    { file: 'template-wall.glb', position: [10.73, 3.7, 0], rotation: -Math.PI / 2, scale: 5.4 },
-    { file: 'cables.glb', position: [-8.8, 5.7, -9.9], rotation: Math.PI, scale: 2.2 },
-    { file: 'gate.glb', position: [0, .05, -10.45], rotation: Math.PI, scale: 2.25 },
-  ];
-  if (level > 0) placements.push({ file: 'corridor.glb', position: [4.8, .04, 4], rotation: -Math.PI / 2, scale: 2.8 });
-  await Promise.all(placements.map(async spec => {
-    try {
-      const gltf = await loader.loadAsync(`/assets/kenney-modular-space/models/${spec.file}`);
-      const model = gltf.scene; model.position.set(...spec.position); model.rotation.y = spec.rotation ?? 0; model.scale.setScalar(spec.scale ?? 1);
-      model.traverse(node => { if (node instanceof THREE.Mesh) { node.castShadow = true; node.receiveShadow = true; } }); target.add(model);
-    } catch { /* local asset fallback intentionally keeps the chamber functional */ }
-  }));
+  deckPromise ??= loader.loadAsync('/assets/spaceship-deck-showroom.glb').then(({ scene }) => scene);
+  try {
+    const deck = (await deckPromise).clone(true);
+    deck.name = `spaceship-deck-${level + 1}`;
+    deck.scale.setScalar(.84);
+    deck.position.y = .02;
+    deck.traverse(node => {
+      if (node instanceof THREE.Mesh) {
+        node.castShadow = true;
+        node.receiveShadow = true;
+        // The source materials are intentionally retained: the cyan emissive
+        // trim and cool hull palette are part of the pack's visual identity.
+      }
+    });
+    target.add(deck);
+  } catch (error) {
+    console.warn('Spaceship environment could not be loaded; using the chamber fallback.', error);
+  }
 }

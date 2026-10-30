@@ -1,6 +1,6 @@
 # Portal Pair
 
-An original, silent two-player 3D puzzle prototype. It uses local CC0 Kenney Modular Space Kit GLB dressing, procedural Three.js geometry, peer-to-peer WebRTC data channels, and Rapier initialization for the physics layer. It does not include assets, audio, or references from any commercial game.
+An original, silent two-player 3D puzzle prototype. The chambers use a locally bundled, lightweight CC0 spaceship interior GLB with a control bridge, reactor bay, bunks, transport pad, and engineering props, paired with procedural Three.js puzzle geometry and peer-to-peer WebRTC data channels. Asset source and license details are in [ASSET_CREDITS.md](ASSET_CREDITS.md). It does not include audio or references from any commercial game.
 
 ## Local development
 

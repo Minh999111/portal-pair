@@ -17,12 +17,17 @@ app.innerHTML = `<canvas id="game"></canvas><div id="hud" class="hidden"><div cl
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
 const canvas = $('#game') as HTMLCanvasElement, hud = $('#hud'), menu = $('#menu'), modal = $('#modal'), pause = $('#pause'), complete = $('#complete');
-const scene = new THREE.Scene(); scene.background = new THREE.Color(0x071018); scene.fog = new THREE.Fog(0x071018, 14, 48);
-const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, .1, 100); const renderer = new THREE.WebGLRenderer({ canvas, antialias: true }); renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.shadowMap.enabled = true;
-scene.add(new THREE.HemisphereLight(0x9ed5ff, 0x101522, 1.5)); const key = new THREE.DirectionalLight(0xa8dfff, 2.2); key.position.set(4, 7, 3); key.castShadow = true; scene.add(key);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x040912); scene.fog = new THREE.Fog(0x040912, 22, 62);
+const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, .1, 100); const renderer = new THREE.WebGLRenderer({ canvas, antialias: true }); renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12;
+scene.add(new THREE.HemisphereLight(0x9ed5ff, 0x101522, 1.65)); const key = new THREE.DirectionalLight(0xa8dfff, 2.2); key.position.set(4, 7, 3); key.castShadow = true; scene.add(key);
+const amberLight = new THREE.PointLight(0xffa719, 5, 12); amberLight.position.set(-4, 3.2, -1); scene.add(amberLight);
+const cyanLight = new THREE.PointLight(0x17cfff, 5, 12); cyanLight.position.set(4, 3.2, -1); scene.add(cyanLight);
+const stars = new Float32Array(420 * 3); let starSeed = 1977; const random = () => { starSeed = (starSeed * 16807) % 2147483647; return (starSeed - 1) / 2147483646; };
+for (let i = 0; i < 420; i++) { const radius = 38 + random() * 40, theta = random() * Math.PI * 2, phi = Math.acos(random() * 2 - 1); stars[i * 3] = Math.sin(phi) * Math.cos(theta) * radius; stars[i * 3 + 1] = Math.cos(phi) * radius; stars[i * 3 + 2] = Math.sin(phi) * Math.sin(theta) * radius; }
+const starField = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ color: 0xa8dfff, size: .075, sizeAttenuation: true, transparent: true, opacity: .78 })); starField.geometry.setAttribute('position', new THREE.Float32BufferAttribute(stars, 3)); scene.add(starField);
 const physics = new Physics(), net = new Network(), portals = new PortalSystem(scene); let chamber = makeChamber(scene, 0), level = 0;
 void dressSciFiChamber(chamber.world, level);
-let pos = new THREE.Vector3(0, 1.75, 7), velocity = new THREE.Vector3(), yaw = 0, pitch = 0, grounded = false, locked = false, running = false, last = performance.now();
+let pos = new THREE.Vector3(0, 1.75, 0), velocity = new THREE.Vector3(), yaw = 0, pitch = 0, grounded = false, locked = false, running = false, last = performance.now();
 let remote = { pos: new THREE.Vector3(0,1.75,6), target: new THREE.Vector3(0,1.75,6), yaw:0, targetYaw:0 }, remoteAvatar: THREE.Group | undefined;
 const keys = new Set<string>(); let grabbed = false, cubeVelocity = new THREE.Vector3(); let syncedCube = new THREE.Vector3(); let plates = { a:false, b:false }, elapsed = 0;
 const ray = new THREE.Raycaster();
@@ -39,8 +44,8 @@ async function start(training=false) {
   if (!training && !remoteAvatar) remoteAvatar = makeAvatar(0x16dbff); if (training) { remoteAvatar = makeAvatar(0xffa719); remoteAvatar.position.set(4,0,-2); setNet('training'); }
   canvas.requestPointerLock();
 }
-function rebuild(next: number) { level = next; scene.remove(chamber.world); chamber = makeChamber(scene, level); void dressSciFiChamber(chamber.world, level); portals.set([]); pos.set(0,1.75,7); velocity.set(0,0,0); cubeVelocity.set(0,0,0); syncedCube.copy(chamber.cube.position); updateText(); }
-function shot(kind: 'amber'|'cyan') { if (!locked) return; ray.setFromCamera(new THREE.Vector2(), camera); const targets = chamber.world.children.filter(x => x instanceof THREE.Mesh); const hit = ray.intersectObjects(targets, false).find(h => h.object !== chamber.cube); if (!hit) return; const normal = hit.face?.normal.clone().transformDirection(hit.object.matrixWorld) ?? new THREE.Vector3(0,0,1); portals.place(kind, net.isHost ? 'host':'guest', hit.point, normal); }
+function rebuild(next: number) { level = next; scene.remove(chamber.world); chamber = makeChamber(scene, level); void dressSciFiChamber(chamber.world, level); portals.set([]); pos.set(0,1.75,0); velocity.set(0,0,0); cubeVelocity.set(0,0,0); syncedCube.copy(chamber.cube.position); updateText(); }
+function shot(kind: 'amber'|'cyan') { if (!locked) return; ray.setFromCamera(new THREE.Vector2(), camera); const hit = ray.intersectObjects(chamber.world.children, true).find(h => h.object !== chamber.cube); if (!hit) return; const normal = hit.face?.normal.clone().transformDirection(hit.object.matrixWorld) ?? new THREE.Vector3(0,0,1); portals.place(kind, net.isHost ? 'host':'guest', hit.point, normal); }
 function currentPortals() { return portals.portals; }
 function update(dt: number) {
   if (!running) return; elapsed += dt; const speed = keys.has('ShiftLeft') ? 8 : 4.3; const forward = new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)); const right = new THREE.Vector3(-forward.z,0,forward.x); const desired = new THREE.Vector3();

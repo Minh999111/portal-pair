@@ -2,6 +2,6 @@
 
 | Asset | Creator | License | Source | Included locally |
 |---|---|---|---|---|
-| Modular Space Kit (selected GLB models: corridor, gate, modular floor/wall, cables) | Kenney | CC0 1.0 | https://kenney.nl/assets/modular-space-kit and https://opengameart.org/content/modular-space-kit | `public/assets/kenney-modular-space/models/` |
+| Spaceship Interior Deck Kit — assembled showroom scene | 3DAssets.dev (AI-assisted, contributor-reported) | CC0 1.0 Universal | https://3dassets.dev/packs/spaceship-deck-kit · https://3dassets.dev/assets/spaceship-deck-kit-spaceship-deck-kit-st-10f177e9-starter-scene | `public/assets/spaceship-deck-showroom.glb` |
 
-The selected GLB files are low-poly sci-fi station dressing for the original puzzle chambers. The included `License.txt` is the source package's license text. No runtime asset hotlinks, audio files, external fonts, music, or sound effects are used.
+The bundled GLB is used locally; the game does not hotlink the model at runtime. CC0 allows commercial use, modification, and redistribution without attribution. The source reports the complete kit as 49 models / 3.7 MB, and the bundled assembled scene is 875 KB. The license text is included at `public/assets/CC0-1.0.txt`.

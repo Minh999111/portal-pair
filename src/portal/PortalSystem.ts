@@ -18,7 +18,12 @@ export class PortalSystem {
       const material = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: .92 });
       const mesh = new THREE.Mesh(new THREE.CircleGeometry(.72, 32), material);
       mesh.position.fromArray(p.position); mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3().fromArray(p.normal));
-      mesh.position.addScaledVector(new THREE.Vector3().fromArray(p.normal), .012); this.group.add(mesh); this.meshes.set(`${p.owner}-${p.kind}`, mesh);
+      mesh.position.addScaledVector(new THREE.Vector3().fromArray(p.normal), .012); this.group.add(mesh);
+      const halo = new THREE.Mesh(new THREE.TorusGeometry(.78, .1, 12, 48), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .9 }));
+      halo.position.copy(mesh.position); halo.quaternion.copy(mesh.quaternion); halo.position.addScaledVector(new THREE.Vector3().fromArray(p.normal), .018); this.group.add(halo);
+      const glow = new THREE.Mesh(new THREE.TorusGeometry(.82, .23, 8, 48), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .2, side: THREE.DoubleSide, depthWrite: false }));
+      glow.position.copy(mesh.position); glow.quaternion.copy(mesh.quaternion); glow.position.addScaledVector(new THREE.Vector3().fromArray(p.normal), .01); this.group.add(glow);
+      this.meshes.set(`${p.owner}-${p.kind}`, mesh);
     }
   }
   /** Plane crossing + frame transform preserves local velocity; cooldown prevents exit re-entry. */
